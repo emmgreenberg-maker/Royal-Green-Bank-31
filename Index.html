@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Market Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, Arial;
+      background: #0e1224;
+      color: #ffffff;
+    }
+    header {
+      padding: 16px;
+      background: #141a3a;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    .sub {
+      font-size: 13px;
+      opacity: 0.8;
+      margin-top: 6px;
+    }
+    main {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+    .card {
+      background: rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .label {
+      font-size: 13px;
+      opacity: 0.75;
+    }
+    .value {
+      font-size: 22px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    footer {
+      padding: 12px;
+      font-size: 12px;
+      opacity: 0.7;
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Live Market Demo</h1>
+  <div class="sub">
+    עדכון אחרון: <span id="lastUpdate">—</span> · רענון אוטומטי כל 15 שניות
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="label">Bitcoin (USD)</div>
+    <div class="value" id="btc">—</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Ethereum (USD)</div>
+    <div class="value" id="eth">—</div>
+  </div>
+
+  <div class="card">
+    <div class="label">USD → ILS</div>
+    <div class="value" id="usdIls">—</div>
+  </div>
+</main>
+
+<footer>
+  נתונים חיים · ללא מפתחות API · GitHub Pages
+</footer>
+
+<script>
+async function fetchLiveData() {
+  try {
+    // Crypto
+    const cryptoRes = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd",
+      { cache: "no-store" }
+    );
+    const crypto = await cryptoRes.json();
+
+    document.getElementById("btc").textContent =
+      "$" + crypto.bitcoin.usd.toLocaleString();
+
+    document.getElementById("eth").textContent =
+      "$" + crypto.ethereum.usd.toLocaleString();
+
+    // FX
+    const fxRes = await fetch(
+      "https://api.exchangerate.host/latest?base=USD&symbols=ILS",
+      { cache: "no-store" }
+    );
+    const fx = await fxRes.json();
+
+    document.getElementById("usdIls").textContent =
+      fx.rates.ILS.toFixed(4);
+
+    document.getElementById("lastUpdate").textContent =
+      new Date().toLocaleString("he-IL");
+
+  } catch (e) {
+    console.error("Live fetch error", e);
+  }
+}
+
+// רענון ראשוני
+fetchLiveData();
+
+// רענון אוטומטי כל 15 שניות
+setInterval(fetchLiveData, 15000);
+</script>
+
+</body>
+</html>
